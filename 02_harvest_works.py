@@ -1,18 +1,14 @@
 """
-Step 2 - SOURCE LAYER
+step 2 - SOURCE LAYER
 
-Con questo script scarico in blocco le pubblicazioni di ciascuno
-dei 7 atenei, usando l'ID OpenAlex risolto nello step 1. Uso la cursor
-pagination perché con più di 10.000 record - 7 atenei su 10 anni, alcuni con area medica;
-è l'unico modo che OpenAlex mette a disposizione per estrarre tutto senza troncamenti.
+scarico le pubblicazioni dei 7 atenei usando gli id risolti nello step 1. 
+uso cursor pagination perché oltre 10.000 record openalex non li dà altrimenti.
 
-Salvo un file JSONL raw per ateneo: un work per riga, JSON completo così
-come arriva dall'API. Non faccio nessun parsing/pulizia qui - quello lo
-faccio nello staging. Il source layer non deve mai perdere informazione.
+salvo un jsonl per ateneo, un record per riga, tutto quello che arriva dall'api senza toccarlo. 
+il parsing lo faccio dopo in staging.
 
-Uso: python 02_harvest_works.py                                     -> harvesting
+uso: python 02_harvest_works.py                                     -> harvesting
      python 02_harvest_works.py campione raw_works/<file>.jsonl     -> stampa un campione
-
 """
 
 import json
@@ -47,10 +43,9 @@ PACING_DELAY = 0.15            # pausa proattiva tra richieste riuscite,
 
 
 def _get_with_retry(params):
-    """GET con backoff esponenziale su errori transitori.
-    Tengo il 429 separato dagli altri 5xx/errori di rete: mi sono accorto
-    sul campo che un 429 prolungato ha bisogno di un raffreddamento più
-    lungo, non bastano pochi secondi in più a ogni tentativo."""
+    """Retry con backoff sugli errori transitori. Il 429 lo tratto a
+    parte perché ho notato che serve aspettare di più rispetto agli
+    altri errori, altrimenti non si sblocca."""
     delay = 3
     delay_429 = BASE_DELAY_429
     attempt = 0
@@ -104,15 +99,9 @@ def load_institutions() -> list[dict]:
 
 def harvest_institution(institution: dict) -> int:
     """Cursor pagination su /works filtrato per institutions.id.
-
-    Uso un checkpoint (il cursore corrente salvato su disco dopo ogni
-    pagina) perché mi è già capitato che lo script si interrompesse a
-    metà - senza checkpoint, ripartire voleva dire perdere tutto il
-    lavoro fatto fino a quel punto su quell'ateneo. Distinguo anche
-    "non ancora iniziato" da "già completato con successo": mi è
-    capitato di sovrascrivere per errore un file già completo, perché
-    a fine harvesting rimuovo il checkpoint (giustamente), ma un
-    rilancio successivo lo interpretava come "non ancora iniziato"."""
+    Salvo il cursore su disco per riprendere se si interrompe (mi è
+    già successo). Controllo anche se un ateneo è già stato completato
+    prima, altrimenti rischio di sovrascrivere tutto al rilancio."""
     openalex_id = institution["openalex_id"].split("/")[-1]
     safe_name = institution["display_name"].lower().replace(" ", "_")
     out_path = RAW_DIR / f"{safe_name}.jsonl"
@@ -197,11 +186,10 @@ def run_harvest():
 
 
 def mostra_campione(path: str):
-    """Aggiungo questa modalità perché mi serve spesso controllare al volo
-    la struttura reale di un record - specialmente campi annidati come
-    primary_topic, che uso per il confronto per area disciplinare. Leggo
-    solo la prima riga, non tutto il file: con file da centinaia di MB
-    non ha senso caricarli interi solo per guardare un record."""
+    """Serve per vedere velocemente com'è fatto un record, tipo
+    primary_topic che mi serve per l'area disciplinare. Leggo solo la
+    prima riga, non tutto il file (sono grossi, non serve caricarli
+    tutti solo per guardare)."""
     with open(path, encoding="utf-8") as f:
         riga = f.readline()
     record = json.loads(riga)

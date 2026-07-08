@@ -1,23 +1,17 @@
 """
-STAGING LAYER - Export Aisberg (dump grezzo tabelle CINECA/IRIS)
+STAGING LAYER - export aisberg (dump grezzo tabelle CINECA/IRIS)
 
 Input:  list.xlsx (export interno, una riga = una coppia pubblicazione-autore)
-Output: due tabelle di staging, separate per rispettare la granularita' reale:
+Output: due tabelle di staging:
   - staging_pubblicazione.csv   (una riga per pubblicazione, deduplicata)
-  - staging_autore_pubblicazione.csv  (bridge N:M pubblicazione<->autore)
+  - staging_autore_pubblicazione.csv  (bridge pubblicazione<->autore)
 
-REGOLE APPLICATE (in ordine di importanza):
-1. La colonna "autore: Codice fiscale" NON viene mai letta/caricata in memoria
-   in nessuna forma. E' dato personale sensibile (equivalente SSN italiano).
-2. Deduplicazione pubblicazioni via Handle (43064 righe -> ~33629 pubblicazioni
-   uniche): si tiene un solo record "pubblicazione", i restanti autori vanno
-   nel bridge table.
-3. Parsing della stringa dipartimento in campi separati (nome, data inizio,
-   data fine) per storicizzazione vera, non solo etichetta libera.
-4. Nessun dato viene scartato silenziosamente: righe con problemi vengono
-   comunque salvate con flag di anomalia, non buttate via.
+!NB!: la colonna "autore: Codice fiscale" non va mai letta, è dato sensibile. 
+la deduplicazione è su handle (43064 righe -> ~33629 pubblicazioni uniche), tengo un solo record per la pubblicazione 
+e sposto tutti gli autori nel bridge. 
+il dipartimento lo parso in campi separati (nome, data inizio, data fine) invece di lasciarlo come stringa libera. 
+le righe con problemi le tengo comunque, con un flag, invece di buttarle via.
 
-Dipendenze: pip install openpyxl --break-system-packages
 """
 
 import csv

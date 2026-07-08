@@ -1,14 +1,12 @@
 """
 DATA WAREHOUSE - creazione schema e caricamento
 
-Con questo script creo le tabelle del Data Warehouse in SQLite - per questi volumi non mi serve
-altro - e ci carico dentro i CSV di staging che ho già pronto.
+qui creo le tabelle del Data Warehouse in SQLite - per questi volumi ok - e ci carico dentro i CSV di staging che ho già pronto.
 
-è lo stesso contenuto che ho già in staging, 
-solo organizzato in schema a stella invece che in CSV piatti.
-Tengo separate le due gerarchie di tipologia (Aisberg vs OpenAlex) perché
-sono due tassonomie diverse (65 tipologie CINECA contro 15 tipi OpenAlex)
-provare a mappare una sull'altra introdurrebbe un problema di data quality invece di risolverlo.
+è lo stesso contenuto che ho già in staging, solo organizzato in schema a stella invece che in CSV piatti.
+tengo separate le due gerarchie di tipologia (Aisberg vs OpenAlex) perché sono due tassonomie diverse 
+(65 tipologie CINECA contro 15 tipi OpenAlex) provare a mappare una sull'altra introdurrebbe un problema di data quality 
+invece di risolverlo.
 
 Output: datawarehouse.db 
 """

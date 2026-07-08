@@ -1,22 +1,13 @@
 """
-Step 3 - SOURCE LAYER (scraping HTML, stesso portale per tutti gli atenei)
+step 3 - SOURCE LAYER (scraping html, stesso portale per tutti gli atenei)
 
-Con questo script faccio uno scraping leggero delle pagine profilo
-AlmaLaurea, che uso come fonte di normalizzazione (laureati per anno,
-anno di fondazione, numero di gruppi disciplinari coperti) per calcolare
-la produttività scientifica per dimensione dell'ateneo, invece che sui
-totali assoluti.
+scraping leggero delle pagine profilo AlmaLaurea - laureati per anno, anno di fondazione, gruppi disciplinari coperti. 
+mi serve per normalizzare il confronto sulla produzione scientifica per dimensione dell'ateneo invece che sui totali.
 
-Ho scelto AlmaLaurea per lo scraping (e non le pagine dashboard di USTAT
-MUR) perché le ho verificate a mano: USTAT carica i numeri via JavaScript/grafici lato client, 
-quindi un semplice requests+BeautifulSoup non prende nulla di utile - andare oltre avrebbe
-richiesto Selenium/Playwright, sproporzionato per uno scraping che volevo tenere leggero. 
-Le pagine AlmaLaurea invece sono HTML statico, 
-stesso template per (quasi) tutti gli atenei italiani.
+ho provato prima con USTAT MUR ma le pagine caricano tutto via JavaScript, quindi niente da fare con requests+BeautifulSoup senza
+selenium (che per uno scraping che volevo leggero mi sembrava troppo). almaLaurea invece è html statico normale.
 
-Ho verificato che i 7 atenei riportano tutti lo stesso anno di riferimento
-(2025) per i laureati, quindi il confronto tra loro è omogeneo.
-
+i 7 atenei riportano tutti lo stesso anno (2025) per i laureati, quindi il confronto è omogeneo.
 """
 
 import json

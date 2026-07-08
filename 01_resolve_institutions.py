@@ -1,19 +1,13 @@
 """
-Step 1 - SOURCE LAYER
+step 1 - SOURCE LAYER
 
-Con questo script risolvo l'ID OpenAlex e il ROR di ciascuno dei 7 atenei
-che confronto, usando l'endpoint /institutions, utilizzando un'API pubblica tramite api.key.
+risolvo l'id openalex e il ROR dei 7 atenei usando l'endpoint /institutions (api pubblica con api key).
 
-Salvo un dump raw completo (fino a 5 candidati per ricerca) per ogni
-ateneo, per non perdere informazioni nel source layer.
-Anche se poi in staging uso solo 3-4 campi, voglio poter tornare al dato
-originale se scopro un problema più avanti.
+salvo il dump raw completo (fino a 5 candidati per ricerca) per ogni ateneo. 
+in staging poi uso solo 3-4 campi ma preferisco tenermi tutto per dopo, non si sa mai.
 
-IMPORTANTE: da qualche mese OpenAlex richiede una API key (il vecchio
-parametro mailto/"polite pool" non basta più). L'ho scoperto strada facendo,
-con un Error429 persistente che nessun backoff riusciva a risolvere - la causa
-non era rate limiting, era proprio l'assenza della chiave. 
-
+NOTA: serve la API key di OpenAlex, mailto da solo non basta (l'ho scoperto con un 429 che non si risolveva mai, 
+pensavo fosse rate limit e invece mancava proprio la key).
 """
 
 import json
@@ -45,10 +39,9 @@ RAW_DIR.mkdir(exist_ok=True)
 
 def resolve_institution(query: str) -> dict:
     """Chiamo /institutions?search=... e prendo il primo risultato.
-    Salvo comunque il dump raw completo della risposta (fino a 5
-    candidati), perché voglio poter controllare a mano se il match
-    automatico ha preso l'istituzione sbagliata - mi è già capitato di
-    dover verificare omonimie e sedi consorziate."""
+    Salvo comunque tutto il json (fino a 5 candidati) perché a volte il
+    match automatico prende l'istituzione sbagliata e devo controllare
+    a mano."""
     params = {"search": query, "per_page": 5, "mailto": MAILTO, "api_key": API_KEY}
     resp = requests.get(BASE_URL, params=params, timeout=30)
     resp.raise_for_status()
@@ -81,8 +74,7 @@ def main():
         print(f"Risolvo: {q}")
         r = resolve_institution(q)
         results.append(r)
-        # Con solo 7 chiamate non rischio nulla, ma metto comunque una
-        # pausa minima per cortesia verso il servizio.
+        # pausa piccola, tanto per stare tranquilli
         time.sleep(0.5)
 
     out_path = Path(__file__).parent / "institutions_lookup.jsonl"

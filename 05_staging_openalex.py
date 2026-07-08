@@ -1,20 +1,15 @@
 """
-STAGING LAYER - OpenAlex (i 7 atenei del confronto)
+STAGING LAYER - openalex (i 7 atenei del confronto)
 
-Ho tenuto questo staging il più snello possibile: ogni record OpenAlex porta
-con se' campi molto pesanti (abstract come inverted index, referenced_works,
-concepts, mesh, counts_by_year...) che non mi servono per il confronto che
-ho impostato (area disciplinare, open access, andamento temporale). Con
-184.887 record su 7 file per un totale di 5,25GB, portarmi dietro tutto
-fino al Data Warehouse sarebbe solo peso morto - quindi scarto qui quello che non uso.
+tengo questo staging snello: i record openalex hanno campi pesanti (abstract, referenced_works, concepts, mesh, counts_by_year...) 
+che non mi servono per il confronto che ho impostato. 
+con 184.887 record e 5,25GB totali non ha senso portarmeli dietro fino al Data Warehouse.
 
-A differenza dello staging Aisberg, qui non costruisco una tabella ponte
-autori: per il confronto tra atenei mi basta un record per pubblicazione,
-non il detail per singolo autore (quello lo ho gia', ed e' piu' ricco, 
-sul solo Bergamo via Aisberg).
+a differenza di Aisberg qui non faccio una tabella ponte autori - mi basta un record per pubblicazione, 
+il dettaglio per autore ce l'ho già (più ricco) su Bergamo via Aisberg.
 
 Input:  raw_works/<ateneo>.jsonl  (uno per ciascuno dei 7 atenei)
-Output: staging_openalex.csv       (un file unico, con colonna ateneo)
+Output: staging_openalex.csv      (un file unico, con colonna ateneo)
 """
 
 import csv
