@@ -1,12 +1,14 @@
 """
 DATA WAREHOUSE - creazione schema e caricamento
 
-qui creo le tabelle del Data Warehouse in SQLite - per questi volumi ok - e ci carico dentro i CSV di staging che ho già pronto.
+Con questo script creo le tabelle del Data Warehouse in SQLite - per questi volumi non mi serve
+altro - e ci carico dentro i CSV di staging che ho già pronto.
 
-è lo stesso contenuto che ho già in staging, solo organizzato in schema a stella invece che in CSV piatti.
-tengo separate le due gerarchie di tipologia (Aisberg vs OpenAlex) perché sono due tassonomie diverse 
-(65 tipologie CINECA contro 15 tipi OpenAlex) provare a mappare una sull'altra introdurrebbe un problema di data quality 
-invece di risolverlo.
+è lo stesso contenuto che ho già in staging, 
+solo organizzato in schema a stella invece che in CSV piatti.
+Tengo separate le due gerarchie di tipologia (Aisberg vs OpenAlex) perché
+sono due tassonomie diverse (65 tipologie CINECA contro 15 tipi OpenAlex)
+provare a mappare una sull'altra introdurrebbe un problema di data quality invece di risolverlo.
 
 Output: datawarehouse.db 
 """
@@ -192,6 +194,14 @@ def get_or_create_area(conn, cache, domain, field, subfield):
     return cache[key]
  
  
+def _bool_da_csv(valore):
+    """Nel CSV di staging i booleani arrivano come testo True/False -
+    senza questa conversione SQLite li carica come testo e SUM() li
+    somma sempre a zero (l'ho scoperto perche' il tasso di open access
+    veniva 0% su tutti e 7 gli atenei, impossibile per caso)."""
+    return 1 if valore == "True" else 0
+
+
 def carica_fact_openalex(conn):
     """Leggo staging_openalex.csv riga per riga e popolo la fact table.
     Le dimensioni tipo/area le creo al volo (get_or_create) invece di
@@ -220,7 +230,7 @@ def carica_fact_openalex(conn):
                 "is_retracted, is_oa, oa_status, n_autori, n_istituzioni_distinte, n_paesi_distinti) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (row["openalex_id"], ateneo_id, anno, tipo_id, area_id, row["doi"], row["title"],
-                 row["lingua"], row["is_retracted"], row["is_oa"], row["oa_status"],
+                 row["lingua"], _bool_da_csv(row["is_retracted"]), _bool_da_csv(row["is_oa"]), row["oa_status"],
                  row["n_autori"] or None, row["n_istituzioni_distinte"] or None,
                  row["n_paesi_distinti"] or None),
             )
